@@ -44,12 +44,19 @@ $ffi->attach( my_cfunction => ['stat'] => 'void' );
 ## new
 
 ```perl
-my $stat = FFI::C::Stat->new(*HANDLE);
-my $stat = FFI::C::Stat->new($filename);
+my $stat = FFI::C::Stat->new(*HANDLE,   %options);
+my $stat = FFI::C::Stat->new($filename, %options);
 ```
 
 You can create a new instance of this class by calling the new method and passing in
 either a file or directory handle, or by passing in the filename path.
+
+Options:
+
+- symlink
+
+    Use `lstat` instead of `stat`, that is if the filename is a symlink, `stat` the
+    symlink instead of the target.
 
 ## clone
 

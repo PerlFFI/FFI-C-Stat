@@ -59,11 +59,22 @@ $ffi->attach( '_lstat' => ['string'] => 'opaque' );
 
 =head2 new
 
- my $stat = FFI::C::Stat->new(*HANDLE);
- my $stat = FFI::C::Stat->new($filename);
+ my $stat = FFI::C::Stat->new(*HANDLE,   %options);
+ my $stat = FFI::C::Stat->new($filename, %options);
 
 You can create a new instance of this class by calling the new method and passing in
 either a file or directory handle, or by passing in the filename path.
+
+Options:
+
+=over 4
+
+=item symlink
+
+Use C<lstat> instead of C<stat>, that is if the filename is a symlink, C<stat> the
+symlink instead of the target.
+
+=back
 
 =cut
 
@@ -75,7 +86,7 @@ sub new
   if(is_globref $file)
   { $ptr = _fstat(fileno($file)) }
   elsif(!is_ref($file) && defined $file)
-  { $ptr = _stat($file) }
+  { $ptr = $options{symlink} ? _lstat($file) : _stat($file) }
   else
   { Carp::croak("Tried to stat something whch is neither a glob reference nor a plain string") }
 
@@ -246,5 +257,3 @@ else
 }
 
 1;
-
-

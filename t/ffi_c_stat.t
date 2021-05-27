@@ -1,6 +1,7 @@
 use Test2::V0 -no_srand => 1;
 use FFI::C::Stat;
 use File::stat;
+use Config;
 
 my @props = qw(
   dev
@@ -69,5 +70,28 @@ is(
   close $fh;
 }
 
+unlink 'testlink';
+
+if($Config{d_symlink} eq 'define')
+{
+  my $ret = eval { symlink 'corpus/xx.txt', 'testlink' };
+  if($ret == 1)
+  {
+    my $pstat = lstat 'testlink';
+
+    is(
+      FFI::C::Stat->new('testlink', symlink => 1),
+      object {
+        call [ isa => 'FFI::C::Stat' ] => T();
+        call $_ => $pstat->$_ for @props;
+        call atime => match qr/^[0-9]+$/;
+      },
+      'do a stat on a symlink',
+    );
+
+  }
+}
+
+unlink 'testlink';
 
 done_testing;
