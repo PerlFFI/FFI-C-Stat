@@ -20,6 +20,62 @@ either a file or directory handle, or by passing in the filename path.
 
 # PROPERTIES
 
+## dev
+
+```perl
+my $id = $stat->dev;
+```
+
+The ID of device containing file.
+
+## ino
+
+```perl
+my $inode = $stat->ino;
+```
+
+The inode number.
+
+## mode
+
+```perl
+my $mode = $stat->mode;
+```
+
+The file type and mode.
+
+## nlink
+
+```perl
+my $n = $stat->nlink;
+```
+
+The number of hard links.
+
+## uid
+
+```perl
+my $uid = $stat->uid;
+```
+
+The User ID owner.
+
+## gid
+
+```perl
+my $gid = $stat->gid;
+```
+
+The Group ID owner.
+
+## rdev
+
+```perl
+my $id = $stat->rdev;
+```
+
+The ID of device (if special file)
+
 ## size
 
 ```perl
@@ -27,6 +83,46 @@ my $size = $stat->size;
 ```
 
 Returns the size of the file in bytes.
+
+## atime
+
+```perl
+my $time = $stat->atime;
+```
+
+The time of last access.
+
+## mtime
+
+```perl
+my $time = $stat->mtime;
+```
+
+The time of last modification.
+
+## ctime
+
+```perl
+my $time = $stat->ctime;
+```
+
+The time of last status change.
+
+## blksize
+
+```perl
+my $size = $stat->blksize;
+```
+
+The filesystem-specific  preferred I/O block size.
+
+## blocks
+
+```perl
+my $count = $stat->blocks;
+```
+
+Number of blocks allocated.
 
 # AUTHOR
 

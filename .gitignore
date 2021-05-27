@@ -2,3 +2,4 @@ FFI-C-Stat-*
 /.build/
 *.swp
 /ffi/_build
+/.tmp/
