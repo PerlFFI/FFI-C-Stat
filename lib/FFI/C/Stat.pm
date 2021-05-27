@@ -3,7 +3,7 @@ package FFI::C::Stat;
 use strict;
 use warnings;
 use 5.008004;
-use Ref::Util qw( is_ref is_globref);
+use Ref::Util qw( is_ref is_globref is_blessed_ref );
 use Carp ();
 use FFI::Platypus 1.00;
 
@@ -33,7 +33,7 @@ Supposing you have a C function:
 You can bind C<my_cfunction> like this:
 
  use FFI::Platypus 1.00;
-
+ 
  my $ffi = FFI::Platypus->new( api => 1 );
  $ffi->type('object(FFI::C::Stat)' => 'stat');
  $ffi->attach( my_cfunction => ['stat'] => 'void' );
@@ -55,7 +55,7 @@ $ffi->attach( '_stat'  => ['string'] => 'opaque' );
 $ffi->attach( '_fstat' => ['int',  ] => 'opaque' );
 $ffi->attach( '_lstat' => ['string'] => 'opaque' );
 
-=head1 CONSTRUCTOR
+=head1 CONSTRUCTORS
 
 =head2 new
 
@@ -81,6 +81,62 @@ sub new
 
   bless \$ptr, $class;
 }
+
+=head2 clone
+
+ my $stat = FFI::C::Stat->clone($other_stat);
+
+Creates a clone of C<$stat>.  The argument C<$stat> can be either a L<FFI::C::Stat> instance,
+or an opaque pointer to a C<stat> structure.  The latter case is helpful when writing bindings
+to a method that returns a C<stat> structure, since you won't be wanting to free the pointer
+that belongs to the callee.
+
+C:
+
+ struct stat *
+ my_cfunction()
+ {
+   static struct stat stat;  /* definitely do not want to free static memory */
+   ...
+   return stat;
+ }
+
+Perl:
+
+ $ffi->attach( my_cfunction => [] => 'opaque' => sub {
+   my $xsub = shift;
+   my $ptr = $xsub->();
+   return FFI::C::Stat->clone($ptr);
+ });
+
+=cut
+
+$ffi->attach( clone => ['opaque'] => 'opaque' => sub {
+  my($xsub, $class, $other) = @_;
+
+  my $ptr;
+  if(is_blessed_ref $other)
+  {
+    if($other->isa('FFI::C::Stat'))
+    {
+      $ptr = $xsub->($$other);
+    }
+    else
+    {
+      Carp::croak("Not a FFI::C::Struct instance");
+    }
+  }
+  elsif(!is_ref $other)
+  {
+    $ptr = $xsub->($other);
+  }
+  else
+  {
+    Carp::croak("Not an FFI::C::Struct structure or opaque pointer");
+  }
+
+  bless \$ptr, $class;
+});
 
 $ffi->attach( DESTROY => ['stat'] );
 

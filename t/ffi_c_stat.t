@@ -29,6 +29,28 @@ is(
   'do a stat on a regular file',
 );
 
+is(
+  FFI::C::Stat->clone(FFI::C::Stat->new('corpus/xx.txt')),
+  object {
+    call [ isa => 'FFI::C::Stat' ] => T();
+    call $_ => $pstat->$_ for @props;
+    call atime => match qr/^[0-9]+$/;
+  },
+  'clone a stat',
+);
+
+{
+  my $other = FFI::C::Stat->new('corpus/xx.txt');
+  is(
+    FFI::C::Stat->clone($$other),
+    object {
+      call [ isa => 'FFI::C::Stat' ] => T();
+      call $_ => $pstat->$_ for @props;
+      call atime => match qr/^[0-9]+$/;
+    },
+    'clone a from an opaque',
+  );
+}
 
 {
   my $fh;
