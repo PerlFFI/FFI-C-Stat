@@ -1,5 +1,6 @@
 #include <sys/stat.h>
 #include <stdlib.h>
+#include <string.h>
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 typedef unsigned int uid_t;
@@ -50,6 +51,15 @@ stat___fstat(int fd)
     return NULL;
   }
   return self;
+}
+
+struct stat *
+stat__clone(struct stat *self)
+{
+  struct stat *other;
+  other = calloc(1, sizeof(struct stat));
+  memcpy(other, self, sizeof(struct stat));
+  return other;
 }
 
 dev_t

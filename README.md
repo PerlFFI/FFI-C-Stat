@@ -39,7 +39,7 @@ $ffi->type('object(FFI::C::Stat)' => 'stat');
 $ffi->attach( my_cfunction => ['stat'] => 'void' );
 ```
 
-# CONSTRUCTOR
+# CONSTRUCTORS
 
 ## new
 
@@ -50,6 +50,39 @@ my $stat = FFI::C::Stat->new($filename);
 
 You can create a new instance of this class by calling the new method and passing in
 either a file or directory handle, or by passing in the filename path.
+
+## clone
+
+```perl
+my $stat = FFI::C::Stat->clone($other_stat);
+```
+
+Creates a clone of `$stat`.  The argument `$stat` can be either a [FFI::C::Stat](https://metacpan.org/pod/FFI::C::Stat) instance,
+or an opaque pointer to a `stat` structure.  The latter case is helpful when writing bindings
+to a method that returns a `stat` structure, since you won't be wanting to free the pointer
+that belongs to the callee.
+
+C:
+
+```perl
+struct stat *
+my_cfunction()
+{
+  static struct stat stat;  /* definitely do not want to free static memory */
+  ...
+  return stat;
+}
+```
+
+Perl:
+
+```perl
+$ffi->attach( my_cfunction => [] => 'opaque' => sub {
+  my $xsub = shift;
+  my $ptr = $xsub->();
+  return FFI::C::Stat->clone($ptr);
+});
+```
 
 # PROPERTIES
 
