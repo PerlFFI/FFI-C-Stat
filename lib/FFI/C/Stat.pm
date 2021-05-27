@@ -25,8 +25,7 @@ $ffi->mangler(sub { "stat__$_[0]" });
 
 $ffi->attach( '_stat'  => ['string'] => 'opaque' );
 $ffi->attach( '_fstat' => ['int',  ] => 'opaque' );
-$ffi->attach( '_lstat' => ['string'] => 'opaque' ) unless $^O eq 'MSWin32';
-
+$ffi->attach( '_lstat' => ['string'] => 'opaque' );
 
 =head1 CONSTRUCTOR
 

@@ -14,20 +14,22 @@ stat___stat(const char *filename)
   return self;
 }
 
-#if !defined(_WIN32) || defined(__CYGWIN__)
 struct stat *
 stat___lstat(const char *filename)
 {
   struct stat *self;
   self = calloc(1, sizeof(struct stat));
+#if !defined(_WIN32) || defined(__CYGWIN__)
   if(lstat(filename, self) == -1)
+#else
+  if(stat(filename, self) == -1)
+#endif
   {
     free(self);
     return NULL;
   }
   return self;
 }
-#endif
 
 struct stat *
 stat___fstat(int fd)
