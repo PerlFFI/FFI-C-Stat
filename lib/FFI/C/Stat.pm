@@ -12,7 +12,31 @@ use FFI::Platypus 1.00;
 
 =head1 SYNOPSIS
 
+# EXAMPLE: examples/synopsis.pl
+
 =head1 DESCRIPTION
+
+Perl comes with perfectly good C<stat>, C<lstat> functions, however if you are writing
+FFI bindings for a library that use the C C<stat> structure, you are out of luck there.
+This module provides an FFI friendly interface to the C C<stat> function, which uses
+an object similar to L<File::stat>, except the internals are a real C C<struct> that
+you can pass into C APIs that need it.
+
+Supposing you have a C function:
+
+ void
+ my_cfunction(struct stat *s)
+ {
+   ...
+ }
+
+You can bind C<my_cfunction> like this:
+
+ use FFI::Platypus 1.00;
+
+ my $ffi = FFI::Platypus->new( api => 1 );
+ $ffi->type('object(FFI::C::Stat)' => 'stat');
+ $ffi->attach( my_cfunction => ['stat'] => 'void' );
 
 =cut
 
