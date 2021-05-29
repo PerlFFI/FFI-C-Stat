@@ -18,13 +18,45 @@ my @props = qw(
   blocks
 );
 
-my $pstat = stat 'corpus/xx.txt';
+my $first = 1;
+
+sub expect
+{
+  my($pstat) = @_;
+
+  my %expect;
+
+  foreach my $prop (@props)
+  {
+    $expect{$prop} = $pstat->$prop;
+  }
+
+  # work around possible Perl stat bug
+  if($^O eq 'freebsd')
+  {
+    my($dev, $rdev) = (split /\s+/, `stat -r corpus/xx.txt`)[0,6];
+    if($first)
+    {
+      note "On FreeBSD we will use the stat command instead of Perl's stat to find dev / rdev values";
+      note "see https://github.com/uperl/FFI-C-Stat/issues/5";
+      note "dev  = $dev / @{[ $pstat->dev ]}";
+      note "rdev = $rdev / @{[ $pstat->rdev ]}";
+    }
+    $first = 0;
+    $expect{dev}  = $dev;
+    $expect{rdev} = $rdev;
+  }
+
+  %expect;
+}
+
+my %expect = expect(stat 'corpus/xx.txt');
 
 is(
   FFI::C::Stat->new('corpus/xx.txt'),
   object {
     call [ isa => 'FFI::C::Stat' ] => T();
-    call $_ => $pstat->$_ for @props;
+    call $_ => $expect{$_} for @props;
     call atime => match qr/^[0-9]+$/;
   },
   'do a stat on a regular file',
@@ -34,7 +66,7 @@ is(
   FFI::C::Stat->clone(FFI::C::Stat->new('corpus/xx.txt')),
   object {
     call [ isa => 'FFI::C::Stat' ] => T();
-    call $_ => $pstat->$_ for @props;
+    call $_ => $expect{$_} for @props;
     call atime => match qr/^[0-9]+$/;
   },
   'clone a stat',
@@ -46,7 +78,7 @@ is(
     FFI::C::Stat->clone($$other),
     object {
       call [ isa => 'FFI::C::Stat' ] => T();
-      call $_ => $pstat->$_ for @props;
+      call $_ => $expect{$_} for @props;
       call atime => match qr/^[0-9]+$/;
     },
     'clone a from an opaque',
@@ -56,12 +88,12 @@ is(
 {
   my $fh;
   open $fh, '<', 'corpus/xx.txt';
-  my $pstat = stat $fh;
+  %expect = expect(stat $fh);
   is(
     FFI::C::Stat->new($fh),
     object {
       call [ isa => 'FFI::C::Stat' ] => T();
-      call $_ => $pstat->$_ for @props;
+      call $_ => $expect{$_} for @props;
       call atime => match qr/^[0-9]+$/;
     },
     'do a stat on a filehandle',
@@ -77,13 +109,13 @@ if($Config{d_symlink} eq 'define')
   my $ret = eval { symlink 'corpus/xx.txt', 'testlink' };
   if($ret == 1)
   {
-    my $pstat = lstat 'testlink';
+    %expect = expect(lstat 'testlink');
 
     is(
       FFI::C::Stat->new('testlink', symlink => 1),
       object {
         call [ isa => 'FFI::C::Stat' ] => T();
-        call $_ => $pstat->$_ for @props;
+        call $_ => $expect{$_} for @props;
         call atime => match qr/^[0-9]+$/;
       },
       'do a stat on a symlink',
