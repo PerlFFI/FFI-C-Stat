@@ -10,7 +10,6 @@ my @props = qw(
   nlink
   uid
   gid
-  rdev
   size
   mtime
   ctime
@@ -44,8 +43,10 @@ sub expect
     }
     $first = 0;
     $expect{dev}  = $dev;
-    $expect{rdev} = $rdev;
   }
+
+  $expect{rdev} = match qr/^-?[0-9]+$/;
+  $expect{atime} = match qr/^[0-9]+$/;
 
   %expect;
 }
@@ -57,7 +58,6 @@ is(
   object {
     call [ isa => 'FFI::C::Stat' ] => T();
     call $_ => $expect{$_} for @props;
-    call atime => match qr/^[0-9]+$/;
   },
   'do a stat on a regular file',
 );
@@ -67,7 +67,6 @@ is(
   object {
     call [ isa => 'FFI::C::Stat' ] => T();
     call $_ => $expect{$_} for @props;
-    call atime => match qr/^[0-9]+$/;
   },
   'clone a stat',
 );
@@ -79,7 +78,6 @@ is(
     object {
       call [ isa => 'FFI::C::Stat' ] => T();
       call $_ => $expect{$_} for @props;
-      call atime => match qr/^[0-9]+$/;
     },
     'clone a from an opaque',
   );
@@ -94,7 +92,6 @@ is(
     object {
       call [ isa => 'FFI::C::Stat' ] => T();
       call $_ => $expect{$_} for @props;
-      call atime => match qr/^[0-9]+$/;
     },
     'do a stat on a filehandle',
   );
@@ -116,7 +113,6 @@ if($Config{d_symlink} eq 'define')
       object {
         call [ isa => 'FFI::C::Stat' ] => T();
         call $_ => $expect{$_} for @props;
-        call atime => match qr/^[0-9]+$/;
       },
       'do a stat on a symlink',
     );
