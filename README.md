@@ -46,10 +46,12 @@ $ffi->attach( my_cfunction => ['stat'] => 'void' );
 ```perl
 my $stat = FFI::C::Stat->new(*HANDLE,   %options);
 my $stat = FFI::C::Stat->new($filename, %options);
+my $stat = FFI::C::Stat->new;
 ```
 
 You can create a new instance of this class by calling the new method and passing in
-either a file or directory handle, or by passing in the filename path.
+either a file or directory handle, or by passing in the filename path.  If you do
+not pass anything then an uninitialized stat will be returned.
 
 Options:
 
@@ -90,6 +92,10 @@ $ffi->attach( my_cfunction => [] => 'opaque' => sub {
   return FFI::C::Stat->clone($ptr);
 });
 ```
+
+The behavior of passing in `undef` prior to version 0.03 was undefined and could cause a
+crash.  In version 0.03 and later passing in `undef` will return a stat object with all
+of the bits set to zero (0).
 
 # PROPERTIES
 
@@ -203,7 +209,7 @@ Graham Ollis <plicease@cpan.org>
 
 # COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2021 by Graham Ollis.
+This software is copyright (c) 2021-2023 by Graham Ollis.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

@@ -54,6 +54,7 @@ $ffi->mangler(sub { "stat__$_[0]" });
 $ffi->attach( '_stat'  => ['string'] => 'opaque' );
 $ffi->attach( '_fstat' => ['int',  ] => 'opaque' );
 $ffi->attach( '_lstat' => ['string'] => 'opaque' );
+$ffi->attach( '_new'   => []         => 'opaque' );
 
 =head1 CONSTRUCTORS
 
@@ -61,9 +62,11 @@ $ffi->attach( '_lstat' => ['string'] => 'opaque' );
 
  my $stat = FFI::C::Stat->new(*HANDLE,   %options);
  my $stat = FFI::C::Stat->new($filename, %options);
+ my $stat = FFI::C::Stat->new;
 
 You can create a new instance of this class by calling the new method and passing in
-either a file or directory handle, or by passing in the filename path.
+either a file or directory handle, or by passing in the filename path.  If you do
+not pass anything then an uninitialized stat will be returned.
 
 Options:
 
@@ -87,6 +90,8 @@ sub new
   { $ptr = _fstat(fileno($file)) }
   elsif(!is_ref($file) && defined $file)
   { $ptr = $options{symlink} ? _lstat($file) : _stat($file) }
+  elsif(!defined $file)
+  { $ptr = _new() }
   else
   { Carp::croak("Tried to stat something whch is neither a glob reference nor a plain string") }
 
@@ -119,6 +124,10 @@ Perl:
    my $ptr = $xsub->();
    return FFI::C::Stat->clone($ptr);
  });
+
+The behavior of passing in C<undef> prior to version 0.03 was undefined and could cause a
+crash.  In version 0.03 and later passing in C<undef> will return a stat object with all
+of the bits set to zero (0).
 
 =cut
 
