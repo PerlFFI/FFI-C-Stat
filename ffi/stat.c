@@ -54,12 +54,27 @@ stat___fstat(int fd)
 }
 
 struct stat *
-stat__clone(struct stat *self)
+stat___new(void)
 {
-  struct stat *other;
-  other = malloc(sizeof(struct stat));
-  memcpy(other, self, sizeof(struct stat));
-  return other;
+  struct stat *self;
+  self = malloc(sizeof(struct stat));
+  return self;
+}
+
+struct stat *
+stat__clone(struct stat *other)
+{
+  struct stat *self;
+  self = malloc(sizeof(struct stat));
+  if(other == NULL)
+  {
+    memset(self, 0, sizeof(struct stat));
+  }
+  else
+  {
+    memcpy(self, other, sizeof(struct stat));
+  }
+  return self;
 }
 
 dev_t
