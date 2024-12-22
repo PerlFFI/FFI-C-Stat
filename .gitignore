@@ -3,3 +3,7 @@ FFI-C-Stat-*
 *.swp
 /ffi/_build
 /.tmp/
+/FFI-C-Stat-*
+/.build
+*.old
+*.orig
